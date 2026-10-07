@@ -4,7 +4,7 @@ use crate::{
     quicklook::{
         QuickLookItemInput, close_preview_panel, toggle_preview_panel, update_preview_panel,
     },
-    search_activity,
+    run_history, search_activity,
     sort::{SortEntry, SortStatePayload, sort_entries},
     window_controls::{activate_main_window_impl, hide_main_window_impl, toggle_main_window_impl},
 };
@@ -437,16 +437,25 @@ pub fn set_watch_config(
 }
 
 #[tauri::command]
-pub async fn open_in_finder(path: String) {
-    if let Err(e) = Command::new("open").arg("-R").arg(&path).spawn() {
-        error!("Failed to reveal path in Finder: {e}");
+pub async fn open_in_finder(app: AppHandle, path: String) {
+    match Command::new("open").arg("-R").arg(&path).spawn() {
+        // Get out of the way once the item is handed off, like a launcher.
+        Ok(_) => {
+            run_history::record_run(&path);
+            hide_main_window_impl(&app);
+        }
+        Err(e) => error!("Failed to reveal path in Finder: {e}"),
     }
 }
 
 #[tauri::command]
-pub async fn open_path(path: String) {
-    if let Err(e) = Command::new("open").arg(&path).spawn() {
-        error!("Failed to open path: {e}");
+pub async fn open_path(app: AppHandle, path: String) {
+    match Command::new("open").arg(&path).spawn() {
+        Ok(_) => {
+            run_history::record_run(&path);
+            hide_main_window_impl(&app);
+        }
+        Err(e) => error!("Failed to open path: {e}"),
     }
 }
 

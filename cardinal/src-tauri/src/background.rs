@@ -1,7 +1,7 @@
 use crate::{
     commands::{NodeInfoRequest, SearchJob, WatchConfigUpdate},
     lifecycle::{APP_QUIT, AppLifecycleState, load_app_state, update_app_state},
-    search_activity,
+    run_history, search_activity,
     window_controls::is_main_window_foreground,
 };
 use anyhow::Result;
@@ -12,7 +12,8 @@ use once_cell::sync::Lazy;
 use parking_lot::Mutex;
 use rayon::spawn;
 use search_cache::{
-    HandleFSEError, SearchCache, SearchOptions, SearchResultNode, SlabIndex, WalkData,
+    HandleFSEError, SearchCache, SearchOptions, SearchOutcome, SearchResultNode, SlabIndex,
+    WalkData,
 };
 use search_cancel::CancellationToken;
 use serde::Serialize;
@@ -362,7 +363,10 @@ pub fn run_background_event_loop(
                     result_tx
                 } = job.expect("Search channel closed");
                 let opts = SearchOptions::from(options);
-                let payload = cache.search_query_with_options(query, opts, cancellation_token);
+                let mut payload = cache.search_query_with_options(query, opts, cancellation_token);
+                if let Ok(SearchOutcome { nodes: Some(nodes), .. }) = &mut payload {
+                    run_history::promote_run_items(&cache, nodes);
+                }
                 result_tx.send(payload).expect("Failed to send result");
             }
             recv(node_info_rx) -> request => {

@@ -2,6 +2,7 @@ mod background;
 mod commands;
 mod lifecycle;
 mod quicklook;
+mod run_history;
 mod search_activity;
 mod sort;
 mod window_controls;
