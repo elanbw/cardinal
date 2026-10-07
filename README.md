@@ -48,7 +48,7 @@ For the supported operator catalog—including boolean grouping, folder scoping,
 
 ### Keyboard shortcuts & previews
 
-- `Cmd+Shift+Space` – toggle the Cardinal window globally via the quick-launch hotkey.
+- `Option+Space` – toggle the Cardinal window globally via the quick-launch hotkey.
 - `Cmd+,` – open Preferences.
 - `Esc` – hide the Cardinal window.
 - `ArrowUp`/`ArrowDown` – move the selection.
