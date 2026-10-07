@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { DEFAULT_INCLUDE_PATHS, resetPathDefaultsMigration } from '../pathDefaults';
 import { useIncludePaths } from '../useIncludePaths';
 
 const STORAGE_KEY = 'cardinal.includePaths';
@@ -12,25 +13,27 @@ const flushEffects = async () => {
 describe('useIncludePaths', () => {
   beforeEach(() => {
     window.localStorage.clear();
+    window.localStorage.setItem('cardinal.pathDefaultsVersion', '2');
+    resetPathDefaultsMigration();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('starts empty by default and persists the empty default once', async () => {
+  it('uses cloud, iCloud, and font folders by default and persists them once', async () => {
     const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
 
     const { result } = renderHook(() => useIncludePaths());
 
-    expect(result.current.includePaths).toEqual([]);
-    expect(result.current.defaultIncludePaths).toEqual([]);
+    expect(result.current.includePaths).toEqual(DEFAULT_INCLUDE_PATHS);
+    expect(result.current.defaultIncludePaths).toContain('~/Library/CloudStorage');
 
     await flushEffects();
 
     // Mirrors useIgnorePaths: on first run with no stored value the hook writes
     // the default to localStorage so subsequent reads short-circuit.
-    expect(setItemSpy).toHaveBeenCalledWith(STORAGE_KEY, JSON.stringify([]));
+    expect(setItemSpy).toHaveBeenCalledWith(STORAGE_KEY, JSON.stringify(DEFAULT_INCLUDE_PATHS));
   });
 
   it('hydrates from stored values and filters invalid entries', async () => {
@@ -74,7 +77,7 @@ describe('useIncludePaths', () => {
 
     const { result } = renderHook(() => useIncludePaths());
 
-    expect(result.current.includePaths).toEqual([]);
+    expect(result.current.includePaths).toEqual(DEFAULT_INCLUDE_PATHS);
 
     await flushEffects();
 

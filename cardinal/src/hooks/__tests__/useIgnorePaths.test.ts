@@ -1,20 +1,28 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { resetPathDefaultsMigration } from '../pathDefaults';
 import { useIgnorePaths } from '../useIgnorePaths';
 
 const STORAGE_KEY = 'cardinal.ignorePaths';
 const EXPECTED_DEFAULT_IGNORE_PATHS = [
   '/Volumes',
-  '~/Library/CloudStorage',
-  '~/Library/Biome',
-  '~/Library/Caches',
-  '~/Library/Logs',
-  '~/Library/Metadata',
-  '/Library/Caches',
-  '/System/Library/Caches',
-  '/private/var',
-  '/private/tmp',
+  '/System',
+  '/Library',
+  '/private',
+  '/usr',
+  '/bin',
+  '/sbin',
+  '/cores',
+  '/dev',
+  '/opt',
+  '~/Library',
+  '~/.cargo',
+  '~/.rustup',
+  '~/.npm',
+  '~/.cache',
+  '~/.local',
+  '~/.vscode/extensions',
 ];
 
 const flushEffects = async () => {
@@ -24,6 +32,8 @@ const flushEffects = async () => {
 describe('useIgnorePaths', () => {
   beforeEach(() => {
     window.localStorage.clear();
+    window.localStorage.setItem('cardinal.pathDefaultsVersion', '2');
+    resetPathDefaultsMigration();
   });
 
   afterEach(() => {
@@ -59,18 +69,13 @@ describe('useIgnorePaths', () => {
     );
   });
 
-  it('includes cache, biome, logs, metadata, and system runtime folders in default ignore paths', () => {
+  it('ignores system trees and user Library by default', () => {
     const { result } = renderHook(() => useIgnorePaths());
 
-    expect(result.current.defaultIgnorePaths).toContain('~/Library/CloudStorage');
-    expect(result.current.defaultIgnorePaths).toContain('~/Library/Caches');
-    expect(result.current.defaultIgnorePaths).toContain('/Library/Caches');
-    expect(result.current.defaultIgnorePaths).toContain('/System/Library/Caches');
-    expect(result.current.defaultIgnorePaths).toContain('~/Library/Biome');
-    expect(result.current.defaultIgnorePaths).toContain('~/Library/Logs');
-    expect(result.current.defaultIgnorePaths).toContain('~/Library/Metadata');
-    expect(result.current.defaultIgnorePaths).toContain('/private/var');
-    expect(result.current.defaultIgnorePaths).toContain('/private/tmp');
+    expect(result.current.defaultIgnorePaths).toContain('/System');
+    expect(result.current.defaultIgnorePaths).toContain('/Library');
+    expect(result.current.defaultIgnorePaths).toContain('/private');
+    expect(result.current.defaultIgnorePaths).toContain('~/Library');
   });
 
   it('keeps an empty stored array without writing defaults', async () => {
