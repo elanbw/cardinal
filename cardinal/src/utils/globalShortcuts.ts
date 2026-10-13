@@ -6,7 +6,8 @@ export const QUICK_LAUNCH_SHORTCUT = 'Alt+Space';
 export async function initializeGlobalShortcuts(): Promise<void> {
   try {
     await register(QUICK_LAUNCH_SHORTCUT, (event) => {
-      if (event.state === 'Released') {
+      // Fire on press so the window is ready sooner for keys typed right after the hotkey.
+      if (event.state === 'Pressed') {
         void invoke('toggle_main_window');
       }
     });

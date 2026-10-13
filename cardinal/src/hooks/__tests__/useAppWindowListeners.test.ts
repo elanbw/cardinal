@@ -24,7 +24,6 @@ const mockedSubscribeWindowDragDrop = vi.mocked(subscribeWindowDragDrop);
 type HookProps = {
   activeTab: 'files' | 'events';
   searchInputRef: RefObject<HTMLInputElement>;
-  focusAndSelectSearchInput: () => void;
   handleStatusUpdate: (scannedFiles: number, processedEvents: number, rescanErrors: number) => void;
   setLifecycleState: (status: 'Initializing' | 'Updating' | 'Ready') => void;
   submitFilesQuery: (query: string, options?: { immediate?: boolean }) => void;
@@ -37,7 +36,6 @@ describe('useAppWindowListeners', () => {
   const quickLaunchUnlisten = vi.fn();
   const dragDropUnlisten = vi.fn();
 
-  const focusAndSelectSearchInput = vi.fn();
   const handleStatusUpdate = vi.fn();
   const setLifecycleState = vi.fn();
   const submitFilesQuery = vi.fn();
@@ -58,7 +56,6 @@ describe('useAppWindowListeners', () => {
       initialProps: {
         activeTab: 'files',
         searchInputRef,
-        focusAndSelectSearchInput,
         handleStatusUpdate,
         setLifecycleState,
         submitFilesQuery,
@@ -74,8 +71,14 @@ describe('useAppWindowListeners', () => {
     quickLaunchCallback = null;
     dragDropCallback = null;
     document.documentElement.removeAttribute('data-window-focused');
+    document.body.innerHTML = '';
     searchInputElement = document.createElement('input');
+    document.body.appendChild(searchInputElement);
     searchInputRef.current = searchInputElement;
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+      callback(0);
+      return 0;
+    });
     elementFromPointMock = vi.fn(() => searchInputElement);
     Object.defineProperty(document, 'elementFromPoint', {
       configurable: true,
@@ -120,10 +123,39 @@ describe('useAppWindowListeners', () => {
     });
     expect(setLifecycleState).toHaveBeenCalledWith('Ready');
 
+    searchInputElement.value = 'old query';
     act(() => {
       quickLaunchCallback?.();
     });
-    expect(focusAndSelectSearchInput).toHaveBeenCalledTimes(1);
+    expect(document.activeElement).toBe(searchInputElement);
+    expect(searchInputElement.selectionStart).toBe(0);
+    expect(searchInputElement.selectionEnd).toBe('old query'.length);
+  });
+
+  it('keeps text typed before quick launch instead of selecting it', () => {
+    renderWindowListeners();
+    searchInputElement.value = 'ab';
+    searchInputElement.focus();
+    searchInputElement.setSelectionRange(2, 2);
+
+    act(() => {
+      quickLaunchCallback?.();
+    });
+    expect(searchInputElement.selectionStart).toBe(2);
+    expect(searchInputElement.selectionEnd).toBe(2);
+  });
+
+  it('selects the focused query when the window blurs', () => {
+    renderWindowListeners();
+    searchInputElement.value = 'old query';
+    searchInputElement.focus();
+    searchInputElement.setSelectionRange(9, 9);
+
+    act(() => {
+      window.dispatchEvent(new Event('blur'));
+    });
+    expect(searchInputElement.selectionStart).toBe(0);
+    expect(searchInputElement.selectionEnd).toBe(9);
   });
 
   it('handles drag-drop search routing for files and events tabs', async () => {
@@ -146,7 +178,6 @@ describe('useAppWindowListeners', () => {
     rerender({
       activeTab: 'events',
       searchInputRef,
-      focusAndSelectSearchInput,
       handleStatusUpdate,
       setLifecycleState,
       submitFilesQuery,

@@ -29,6 +29,7 @@ type HookProps = {
   selectedIndicesRef: { current: number[] };
   focusSearchInput: () => void;
   focusAndSelectSearchInput: () => void;
+  typeIntoSearchInput: (text: string) => void;
   clearSelection: () => void;
   navigateSelection: (delta: 1 | -1, options?: { extend?: boolean }) => void;
   triggerQuickLook: () => void;
@@ -38,6 +39,7 @@ describe('useAppHotkeys', () => {
   const quickLookUnlisten = vi.fn();
   const focusSearchInput = vi.fn();
   const focusAndSelectSearchInput = vi.fn();
+  const typeIntoSearchInput = vi.fn();
   const clearSelection = vi.fn();
   const navigateSelection = vi.fn();
   const triggerQuickLook = vi.fn();
@@ -53,6 +55,7 @@ describe('useAppHotkeys', () => {
         selectedIndicesRef: { current: [0] },
         focusSearchInput,
         focusAndSelectSearchInput,
+        typeIntoSearchInput,
         clearSelection,
         navigateSelection,
         triggerQuickLook,
@@ -247,6 +250,7 @@ describe('useAppHotkeys', () => {
       selectedIndicesRef: { current: [0] },
       focusSearchInput,
       focusAndSelectSearchInput,
+      typeIntoSearchInput,
       clearSelection,
       navigateSelection,
       triggerQuickLook,
@@ -311,5 +315,26 @@ describe('useAppHotkeys', () => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true }));
     });
     expect(mockedOpenResultPath).toHaveBeenCalledWith('/tmp/top');
+  });
+
+  it('routes printable keys typed outside the search input into it', () => {
+    renderHotkeys();
+
+    const letterEvent = new KeyboardEvent('keydown', { key: 'a', cancelable: true });
+    act(() => {
+      window.dispatchEvent(letterEvent);
+    });
+    expect(typeIntoSearchInput).toHaveBeenCalledWith('a');
+    expect(letterEvent.defaultPrevented).toBe(true);
+
+    const input = document.createElement('input');
+    document.body.appendChild(input);
+    act(() => {
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'b', bubbles: true }));
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'c', metaKey: true }));
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    });
+    input.remove();
+    expect(typeIntoSearchInput).toHaveBeenCalledTimes(1);
   });
 });

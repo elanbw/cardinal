@@ -18,7 +18,6 @@ type QueueSearchOptions = {
 type UseAppWindowListenersOptions = {
   activeTab: StatusTabKey;
   searchInputRef: RefObject<HTMLInputElement>;
-  focusAndSelectSearchInput: () => void;
   handleStatusUpdate: (scannedFiles: number, processedEvents: number, rescanErrors: number) => void;
   setLifecycleState: (status: AppLifecycleStatus) => void;
   submitFilesQuery: (query: string, options?: QueueSearchOptions) => void;
@@ -36,7 +35,6 @@ type UseAppWindowListenersResult = {
 export function useAppWindowListeners({
   activeTab,
   searchInputRef,
-  focusAndSelectSearchInput,
   handleStatusUpdate,
   setLifecycleState,
   submitFilesQuery,
@@ -65,10 +63,17 @@ export function useAppWindowListeners({
 
   useEffect(() => {
     const unlistenQuickLaunch = subscribeQuickLaunch(() => {
-      focusAndSelectSearchInput();
+      requestAnimationFrame(() => {
+        const input = searchInputRef.current;
+        // Keys typed before this frame are already in the input; selecting would let the next key
+        // overwrite them.
+        if (!input || document.activeElement === input) return;
+        input.focus();
+        input.select();
+      });
     });
     return unlistenQuickLaunch;
-  }, [focusAndSelectSearchInput]);
+  }, [searchInputRef]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -77,14 +82,21 @@ export function useAppWindowListeners({
     const handleWindowFocus = () => {
       setIsWindowFocused(true);
     };
-    const handleWindowBlur = () => setIsWindowFocused(false);
+    const handleWindowBlur = () => {
+      setIsWindowFocused(false);
+      // Select the query while hidden so typing after the next show replaces it.
+      const input = searchInputRef.current;
+      if (input && document.activeElement === input) {
+        input.select();
+      }
+    };
     window.addEventListener('focus', handleWindowFocus);
     window.addEventListener('blur', handleWindowBlur);
     return () => {
       window.removeEventListener('focus', handleWindowFocus);
       window.removeEventListener('blur', handleWindowBlur);
     };
-  }, []);
+  }, [searchInputRef]);
 
   useEffect(() => {
     if (typeof document === 'undefined') {

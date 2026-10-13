@@ -22,6 +22,7 @@ type UseAppHotkeysOptions = {
   selectedIndicesRef: MutableRefObject<number[]>;
   focusSearchInput: () => void;
   focusAndSelectSearchInput: () => void;
+  typeIntoSearchInput: (text: string) => void;
   clearSelection: () => void;
   navigateSelection: (delta: 1 | -1, options?: MoveSelectionOptions) => void;
   triggerQuickLook: () => void;
@@ -45,6 +46,7 @@ export function useAppHotkeys({
   selectedIndicesRef,
   focusSearchInput,
   focusAndSelectSearchInput,
+  typeIntoSearchInput,
   clearSelection,
   navigateSelection,
   triggerQuickLook,
@@ -177,6 +179,31 @@ export function useAppHotkeys({
     return false;
   });
 
+  // Printable keys pressed outside the search input start a new search, so typing right after the
+  // quick-launch hotkey lands in the input even before it has focus.
+  const handleTypeToSearch = useStableEvent((event: KeyboardEvent) => {
+    if (
+      event.key.length !== 1 ||
+      event.key === ' ' ||
+      event.isComposing ||
+      hasModifierKey(event, { includeShift: false })
+    ) {
+      return false;
+    }
+
+    const target = event.target;
+    if (
+      isEditableTarget(target) ||
+      (target instanceof Element && target.closest('button, select, a, [role="dialog"]'))
+    ) {
+      return false;
+    }
+
+    event.preventDefault();
+    typeIntoSearchInput(event.key);
+    return true;
+  });
+
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
@@ -200,11 +227,13 @@ export function useAppHotkeys({
       if (handleFilesNavigation(event)) {
         return;
       }
+
+      handleTypeToSearch(event);
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleMetaShortcut, handleEnter, handleFilesNavigation]);
+  }, [handleMetaShortcut, handleEnter, handleFilesNavigation, handleTypeToSearch]);
 
   const handleQuickLookKeydown = useStableEvent((payload: QuickLookKeydownPayload) => {
     if (keyboardStateRef.current.activeTab !== 'files') {

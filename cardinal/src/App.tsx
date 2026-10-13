@@ -201,6 +201,15 @@ function App() {
     });
   }, []);
 
+  // Replaces the current query with `text`, keeping React's controlled input in sync.
+  const typeIntoSearchInput = useCallback((text: string) => {
+    const input = searchInputRef.current;
+    if (!input) return;
+    input.focus();
+    input.select();
+    document.execCommand('insertText', false, text);
+  }, []);
+
   useEffect(() => {
     focusAndSelectSearchInput();
   }, [focusAndSelectSearchInput]);
@@ -233,7 +242,6 @@ function App() {
   useAppWindowListeners({
     activeTab,
     searchInputRef,
-    focusAndSelectSearchInput,
     handleStatusUpdate,
     setLifecycleState,
     submitFilesQuery,
@@ -251,6 +259,7 @@ function App() {
     selectedIndicesRef,
     focusSearchInput,
     focusAndSelectSearchInput,
+    typeIntoSearchInput,
     clearSelection,
     navigateSelection,
     triggerQuickLook,
