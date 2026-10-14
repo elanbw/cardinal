@@ -8,6 +8,10 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+vi.mock('@tauri-apps/api/app', () => ({
+  getVersion: vi.fn(() => Promise.resolve('9.9.9')),
+}));
+
 vi.mock('../ThemeSwitcher', () => ({
   __esModule: true,
   default: () => <div data-testid="theme-switcher" />,
@@ -162,5 +166,12 @@ describe('PreferencesOverlay', () => {
     fireEvent.keyDown(includePathsInput, { key: 'Escape' });
 
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the app version', async () => {
+    render(<PreferencesOverlay {...baseProps} />);
+
+    expect((await screen.findByTestId('preferences-version')).textContent).toBe('9.9.9');
+    expect(screen.getByText('preferences.version')).toBeTruthy();
   });
 });

@@ -133,6 +133,7 @@
     "sortingLimit": {
       "label": "排序上限"
     },
+    "version": "版本",
     "save": "保存",
     "reset": "恢复默认设置",
     "close": "关闭"

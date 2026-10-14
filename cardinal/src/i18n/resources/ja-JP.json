@@ -134,6 +134,7 @@
     "sortingLimit": {
       "label": "並び替えの上限"
     },
+    "version": "バージョン",
     "save": "保存",
     "reset": "既定値に戻す",
     "close": "閉じる"

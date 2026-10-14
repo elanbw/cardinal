@@ -134,6 +134,7 @@
     "sortingLimit": {
       "label": "Sorting limit"
     },
+    "version": "Version",
     "save": "Save",
     "reset": "Restore defaults",
     "close": "Close"

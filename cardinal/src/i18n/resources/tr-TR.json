@@ -134,6 +134,7 @@
     "sortingLimit": {
       "label": "Sıralama sınırı"
     },
+    "version": "Sürüm",
     "save": "Kaydet",
     "reset": "Varsayılanlara döndür",
     "close": "Kapat"

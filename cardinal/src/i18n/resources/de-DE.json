@@ -134,6 +134,7 @@
     "sortingLimit": {
       "label": "Sortierlimit"
     },
+    "version": "Version",
     "save": "Speichern",
     "reset": "Standardwerte wiederherstellen",
     "close": "Schließen"

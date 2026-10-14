@@ -134,6 +134,7 @@
     "sortingLimit": {
       "label": "Limite de tri"
     },
+    "version": "Version",
     "save": "Enregistrer",
     "reset": "Rétablir les paramètres par défaut",
     "close": "Fermer"

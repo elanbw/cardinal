@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { getVersion } from '@tauri-apps/api/app';
 import { getWatchRootValidation, isPathInputValid } from '../utils/watchRoot';
 import ThemeSwitcher from './ThemeSwitcher';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -50,6 +51,24 @@ export function PreferencesOverlay({
   const [watchRootInput, setWatchRootInput] = useState<string>(() => watchRoot);
   const [ignorePathsInput, setIgnorePathsInput] = useState<string>(() => ignorePaths.join('\n'));
   const [includePathsInput, setIncludePathsInput] = useState<string>(() => includePaths.join('\n'));
+  const [appVersion, setAppVersion] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open || appVersion) {
+      return;
+    }
+    let cancelled = false;
+    getVersion()
+      .then((version) => {
+        if (!cancelled) {
+          setAppVersion(version);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [open, appVersion]);
 
   useEffect(() => {
     if (!open) {
@@ -293,6 +312,14 @@ export function PreferencesOverlay({
               ) : null}
             </div>
           </div>
+          {appVersion ? (
+            <div className="preferences-row">
+              <p className="preferences-label">{t('preferences.version')}</p>
+              <p className="preferences-control" data-testid="preferences-version">
+                {appVersion}
+              </p>
+            </div>
+          ) : null}
         </div>
         <footer className="preferences-card__footer">
           <button

@@ -134,6 +134,7 @@
     "sortingLimit": {
       "label": "Límite de ordenación"
     },
+    "version": "Versión",
     "save": "Guardar",
     "reset": "Restablecer valores predeterminados",
     "close": "Cerrar"
