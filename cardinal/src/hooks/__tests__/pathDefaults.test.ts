@@ -40,7 +40,7 @@ describe('migratePathDefaults', () => {
 
     expect(readJson(IGNORE_KEY)).toEqual([...DEFAULT_IGNORE_PATHS, '/Users/me/junk']);
     expect(readJson(INCLUDE_KEY)).toEqual([...DEFAULT_INCLUDE_PATHS, '/Volumes/media']);
-    expect(window.localStorage.getItem(VERSION_KEY)).toBe('2');
+    expect(window.localStorage.getItem(VERSION_KEY)).toBe('3');
   });
 
   it('leaves fresh installs to the hooks and marks the version', () => {
@@ -48,11 +48,11 @@ describe('migratePathDefaults', () => {
 
     expect(window.localStorage.getItem(IGNORE_KEY)).toBeNull();
     expect(window.localStorage.getItem(INCLUDE_KEY)).toBeNull();
-    expect(window.localStorage.getItem(VERSION_KEY)).toBe('2');
+    expect(window.localStorage.getItem(VERSION_KEY)).toBe('3');
   });
 
   it('runs only once per version', () => {
-    window.localStorage.setItem(VERSION_KEY, '2');
+    window.localStorage.setItem(VERSION_KEY, '3');
     window.localStorage.setItem(IGNORE_KEY, JSON.stringify(['/only']));
 
     migratePathDefaults();

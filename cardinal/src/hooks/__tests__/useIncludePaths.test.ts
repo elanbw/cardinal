@@ -13,7 +13,7 @@ const flushEffects = async () => {
 describe('useIncludePaths', () => {
   beforeEach(() => {
     window.localStorage.clear();
-    window.localStorage.setItem('cardinal.pathDefaultsVersion', '2');
+    window.localStorage.setItem('cardinal.pathDefaultsVersion', '3');
     resetPathDefaultsMigration();
   });
 

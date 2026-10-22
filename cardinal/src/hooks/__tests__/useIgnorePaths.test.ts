@@ -23,6 +23,7 @@ const EXPECTED_DEFAULT_IGNORE_PATHS = [
   '~/.cache',
   '~/.local',
   '~/.vscode/extensions',
+  '~/Library/CloudStorage/OneDrive-Personal/.Trash',
 ];
 
 const flushEffects = async () => {
@@ -32,7 +33,7 @@ const flushEffects = async () => {
 describe('useIgnorePaths', () => {
   beforeEach(() => {
     window.localStorage.clear();
-    window.localStorage.setItem('cardinal.pathDefaultsVersion', '2');
+    window.localStorage.setItem('cardinal.pathDefaultsVersion', '3');
     resetPathDefaultsMigration();
   });
 

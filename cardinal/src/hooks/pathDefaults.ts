@@ -18,6 +18,9 @@
 // - `~/Library/CloudStorage` holds OneDrive/Dropbox/Google Drive; home-folder shortcuts point here.
 // - `~/Library/Mobile Documents` is iCloud Drive.
 // - `~/Library/Fonts` and `/Library/Fonts` are user-installed fonts.
+//
+// Re-ignored inside an include:
+// - OneDrive's `.Trash` hangs forever on readdir, which left the index stuck initializing.
 export const DEFAULT_IGNORE_PATHS = [
   '/Volumes',
   '/System',
@@ -36,6 +39,7 @@ export const DEFAULT_IGNORE_PATHS = [
   '~/.cache',
   '~/.local',
   '~/.vscode/extensions',
+  '~/Library/CloudStorage/OneDrive-Personal/.Trash',
 ];
 
 export const DEFAULT_INCLUDE_PATHS = [
@@ -63,7 +67,7 @@ const LEGACY_DEFAULT_IGNORE_PATHS = [
 const IGNORE_KEY = 'cardinal.ignorePaths';
 const INCLUDE_KEY = 'cardinal.includePaths';
 const VERSION_KEY = 'cardinal.pathDefaultsVersion';
-const CURRENT_VERSION = '2';
+const CURRENT_VERSION = '3';
 
 let migrated = false;
 
